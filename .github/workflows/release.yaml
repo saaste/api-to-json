@@ -1,0 +1,37 @@
+name: Build and create a release
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Go 1.21.x
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.21.x"
+      - name: Install dependencies
+        run: go get .
+      - name: Build
+        run: go build -v -o api-to-json .
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-to-json
+          path: api-to-json
+      - name: Set current date as env variable
+        run: echo "NOW=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
+      - name: Test datetime
+        run: echo ${{ env.NOW }}
+      - name: Create a release
+        uses: ncipollo/release-action@v1
+        with:
+          commit: "main"
+          artifacts: "api-to-json"
+          tag: "${{ env.NOW }}"
+          name: "${{ env.NOW }}"
