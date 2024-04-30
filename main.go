@@ -14,8 +14,9 @@ type Output struct {
 }
 
 type OutputItem struct {
-	Title string `json:"title"`
-	URL   string `json:"url"`
+	Title string   `json:"title"`
+	URL   string   `json:"url"`
+	Tags  []string `json:"tags"`
 }
 
 func main() {
@@ -46,6 +47,7 @@ func runListenBrainz(lbUserToken string) {
 		output.Items = append(output.Items, OutputItem{
 			Title: artist.Name,
 			URL:   artist.URL,
+			Tags:  artist.Tags,
 		})
 	}
 

@@ -64,4 +64,5 @@ type Artist struct {
 	URL         string
 	Genres      []string
 	ListenCount int64
+	Tags        []string
 }

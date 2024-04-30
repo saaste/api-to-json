@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sort"
 	"strings"
 )
 
@@ -54,11 +55,24 @@ func (c *Client) FetchTopArtists(count int) ([]Artist, error) {
 	for _, stat := range statsWithData {
 		metadata := metaDatas[stat.MBID]
 
+		sort.Slice(
+			metadata.Tag.Artist,
+			func(a, b int) bool {
+				return metadata.Tag.Artist[a].Count > metadata.Tag.Artist[b].Count
+			},
+		)
+
+		tags := make([]string, 0)
+		for _, tag := range metadata.Tag.Artist {
+			tags = append(tags, tag.Tag)
+		}
+
 		output = append(output, Artist{
 			IBID:        metadata.ArtistMBID,
 			Name:        metadata.Name,
 			URL:         fmt.Sprintf("https://listenbrainz.org/artist/%s", metadata.ArtistMBID),
 			ListenCount: stat.ListenCount,
+			Tags:        tags,
 		})
 	}
 
