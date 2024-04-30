@@ -11,7 +11,7 @@ import (
 
 const baseURL = "https://api.listenbrainz.org"
 const statsExtraItems = 10
-const interval = "week" // Allowed values: this_week, this_month, this_year, week, month, quarter, year, half_yearly, all_time
+const interval = "this_week" // Allowed values: this_week, this_month, this_year, week, month, quarter, year, half_yearly, all_time
 
 var client = http.DefaultClient
 
