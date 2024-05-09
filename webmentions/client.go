@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 const baseURL = "https://webmentions.saaste.net"
@@ -52,7 +53,33 @@ func (c *Client) GetWebmentions(domain string) (*Response, error) {
 		return nil, fmt.Errorf("unmarshaling response body failed: %w", err)
 	}
 
+	filteredMentions := make([]Webmention, 0)
+	for _, mention := range resp.Webmentions {
+		// Ignore local links
+		if strings.Contains(mention.Source, "saaste.net") {
+			c.deleteLocalMention(domain, mention)
+			continue
+		}
+		filteredMentions = append(filteredMentions, mention)
+	}
+	resp.Webmentions = filteredMentions
+
 	return &resp, nil
+}
+
+func (c *Client) deleteLocalMention(domain string, mention Webmention) error {
+	url := fmt.Sprintf("%s/webmention/%s/%s?source=%s&target=%s", baseURL, url.PathEscape(domain), url.PathEscape(c.token), url.QueryEscape(mention.Source), url.QueryEscape(mention.Target))
+	request, err := c.makeRequest(http.MethodDelete, url, nil)
+	if err != nil {
+		return fmt.Errorf("failed to make delete request: %w", err)
+	}
+
+	_, err = c.client.Do(request)
+	if err != nil {
+		return fmt.Errorf("failed to send delete request: %w", err)
+	}
+
+	return nil
 }
 
 func (c *Client) makeRequest(method string, url string, body io.Reader) (*http.Request, error) {
