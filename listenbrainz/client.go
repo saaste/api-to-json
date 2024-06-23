@@ -31,6 +31,8 @@ func (c *Client) FetchTopArtists(count int) ([]Artist, error) {
 	stats, err := c.fetchArtistStats(count + statsExtraItems)
 	if err != nil {
 		return nil, fmt.Errorf("fetching artist stats failed: %w", err)
+	} else if stats == nil {
+		return make([]Artist, 0), nil
 	}
 
 	statsWithData := make([]StatsArtist, 0)
@@ -90,7 +92,9 @@ func (c *Client) fetchArtistStats(count int) (*StatsArtistsResponse, error) {
 	response, err := client.Do(request)
 	if err != nil {
 		return nil, fmt.Errorf("sending the request failed: %w", err)
-	} else if response.StatusCode != http.StatusOK {
+	} else if response.StatusCode == http.StatusNoContent {
+		return nil, nil
+	} else if response.StatusCode > http.StatusNoContent {
 		bytes, _ := io.ReadAll(response.Body)
 		return nil, fmt.Errorf("sending the request returned an error with status %d: %s", response.StatusCode, string(bytes))
 	}
