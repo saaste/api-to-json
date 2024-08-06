@@ -11,7 +11,8 @@ import (
 )
 
 type Output struct {
-	Items []OutputItem `json:"items"`
+	TopArtists       []OutputItem `json:"top_artists"`
+	TotalArtistCount int64        `json:"total_artist_count"`
 }
 
 type OutputItem struct {
@@ -41,17 +42,18 @@ func runListenBrainz(lbUserToken string) {
 	log.Println("Fetching artist stats from ListenBrainz")
 
 	lbClient := listenbrainz.NewClient(lbUserToken)
-	artists, err := lbClient.FetchTopArtists(10)
+	topArtistsResult, err := lbClient.FetchTopArtists(10)
 	if err != nil {
 		log.Fatalf("Failed to fetch artist stats from ListenBrainz: %v", err)
 	}
 
 	output := Output{
-		Items: make([]OutputItem, 0),
+		TopArtists:       make([]OutputItem, 0),
+		TotalArtistCount: topArtistsResult.TotalArtistCount,
 	}
 
-	for _, artist := range artists {
-		output.Items = append(output.Items, OutputItem{
+	for _, artist := range topArtistsResult.TopArtists {
+		output.TopArtists = append(output.TopArtists, OutputItem{
 			Title: artist.Name,
 			URL:   artist.URL,
 			Tags:  artist.Tags,

@@ -27,13 +27,19 @@ func NewClient(userToken string) *Client {
 	}
 }
 
-func (c *Client) FetchTopArtists(count int) ([]Artist, error) {
+func (c *Client) FetchTopArtists(count int) (*TopArtistsResult, error) {
+	result := &TopArtistsResult{
+		TopArtists:       make([]Artist, 0),
+		TotalArtistCount: 0,
+	}
 	stats, err := c.fetchArtistStats(count + statsExtraItems)
 	if err != nil {
 		return nil, fmt.Errorf("fetching artist stats failed: %w", err)
 	} else if stats == nil {
-		return make([]Artist, 0), nil
+		return result, nil
 	}
+
+	result.TotalArtistCount = stats.Payload.TotalArtistCount
 
 	statsWithData := make([]StatsArtist, 0)
 	mbids := make([]string, 0)
@@ -53,7 +59,6 @@ func (c *Client) FetchTopArtists(count int) ([]Artist, error) {
 		return nil, fmt.Errorf("fetching artist metadata failed: %w", err)
 	}
 
-	output := make([]Artist, 0)
 	for _, stat := range statsWithData {
 		metadata := metaDatas[stat.MBID]
 
@@ -69,7 +74,7 @@ func (c *Client) FetchTopArtists(count int) ([]Artist, error) {
 			tags = append(tags, tag.Tag)
 		}
 
-		output = append(output, Artist{
+		result.TopArtists = append(result.TopArtists, Artist{
 			IBID:        metadata.ArtistMBID,
 			Name:        metadata.Name,
 			URL:         fmt.Sprintf("https://listenbrainz.org/artist/%s", metadata.ArtistMBID),
@@ -78,7 +83,7 @@ func (c *Client) FetchTopArtists(count int) ([]Artist, error) {
 		})
 	}
 
-	return output, nil
+	return result, nil
 
 }
 

@@ -57,6 +57,11 @@ type ArtistTag struct {
 	Count      int64  `json:"count"`
 }
 
+type TopArtistsResult struct {
+	TopArtists       []Artist
+	TotalArtistCount int64
+}
+
 // Output
 type Artist struct {
 	IBID        string

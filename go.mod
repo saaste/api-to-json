@@ -1,3 +1,3 @@
 module github.com/saaste/api-to-json
 
-go 1.21.3
+go 1.21
